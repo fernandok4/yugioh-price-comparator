@@ -14,13 +14,23 @@ async function quit(browser) {
 }
 
 async function getAllCards(page) {
+    let listCards = []
     for (let i = 1; i < 200; i++) {
         try {
             await page.goto(CARDS_DATABASE + String(i))
             const cardNames = await page.evaluate(() => [...document.querySelectorAll('.box_card_name')].map(elem => elem.innerText))
+            const cardAttributes = await page.evaluate(() => [...document.querySelectorAll('.box_card_attribute span')].map(elem => elem.innerText))
             if (cardNames == null) {
                 break;
             }
+            for(let i = 0; i < cardNames.length; i++){
+                let obj = {
+                    name: cardNames[i],
+                    attribute: cardAttributes[i]
+                }
+                listCards.push(obj)
+            }
+            console.log(listCards.length)
         } catch (e) {
             i--
         }
