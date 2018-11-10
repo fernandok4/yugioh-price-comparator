@@ -8,7 +8,6 @@ async function run() {
     await page.goto(CARDS_DATABASE)
     await getAllCards(page)
     await quit(browser)
-    process.exit()
 }
 
 async function quit(browser) {
@@ -17,7 +16,9 @@ async function quit(browser) {
 
 async function getAllCards(page) {
     let listCards = []
+    dao.clearCards()
     for (let i = 1; i < 200; i++) {
+        console.log(i)
         try {
             await page.goto(CARDS_DATABASE + String(i))
             const cardNames = await page.evaluate(() => [...document.querySelectorAll('.box_card_name')].map(elem => elem.innerText))
