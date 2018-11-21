@@ -21,7 +21,21 @@ function insertCards(cards){
     })       
 }
 
+function insertImageCards(cards){
+    let sql = "UPDATE cards SET ds_url_card = ? WHERE nm_card = ?"
+    cards.forEach(card => {
+        con.query(sql, [card.url_image, card.name], (err, rows, fields) => {
+            if(err){
+                console.log(err)
+            } else {
+                console.log('deu certo')
+            }
+        })
+    })
+}
+
 module.exports = {
     insertCards: insertCards,
-    clearCards: clearCards
+    clearCards: clearCards,
+    insertImageCards: insertImageCards
 }
