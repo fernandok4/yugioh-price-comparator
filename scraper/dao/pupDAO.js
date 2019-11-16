@@ -1,5 +1,7 @@
 let mysql = require('mysql')
 let json = require('../../config.json')
+let database = require('./database')
+let conn = new database.Database(json)
 
 let con = mysql.createConnection(json)
 
@@ -34,8 +36,19 @@ function insertImageCards(cards){
     })
 }
 
+async function getAllCards(){
+    let cards = []
+    await conn.query("SELECT nm_card FROM cards").then((rows) => {
+        for(row of rows){
+            cards.push({nm_card: row.nm_card})
+        }
+    })
+    return cards
+}
+
 module.exports = {
     insertCards: insertCards,
     clearCards: clearCards,
-    insertImageCards: insertImageCards
+    insertImageCards: insertImageCards,
+    getAllCards: getAllCards
 }

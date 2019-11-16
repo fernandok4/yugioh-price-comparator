@@ -10,13 +10,21 @@ var maxQtdPages = 3
 async function run() {
     const browser = await pup.launch()
     const page = await browser.newPage()
-    await page.goto(CARDS_DATABASE)
     // let listCards = await getAllCards(page)
-    getPrices(browser, listCards)
-    browser.close()
+    console.log("teste")
+    let cards = await dao.getAllCards()
+    getPrices(browser, cards)
+    console.log("teste2")
+    setInterval(verifyEnd, 20000)
 }
 
-function getPrices(browser, listCards){
+function verifyEnd(browser){
+    if(maxQtdPages == qtdWebSites){
+        quit(browser)
+    }
+}
+
+async function getPrices(browser, listCards){
     getSoloPrices(browser)
     getDuelShopPrices(browser)
     getImageCards(listCards, browser)
@@ -27,26 +35,28 @@ async function quit(browser) {
 }
 
 async function getImageCards(listCards, browser){
+    const page = await browser.newPage()
     for(let i = 0; i < listCards.length; i++){
         try{
-            const page = await browser.newPage()
-            await page.goto(CARDS_IMAGES + String(listCards[i].name))
-            setTimeout(async () => {
-                const cardImageUrl = await page.evaluate(() => document.querySelectorAll('#card-list > div > figure > a > div > img.lazy')[0].src)
-                listCards[i].url_image = cardImageUrl
-                download(cardImageUrl.replace('/', '').replace(' ', '-'), `../images/${listCards[i].name}.jpg`, function(){
-                    console.log('done');
-                });
-            }, 3000)
+            console.log(CARDS_IMAGES + String(listCards[i].nm_card))
+            await page.goto(CARDS_IMAGES + String(listCards[i].nm_card))
+            await sleep(5000)
+            const cardImageUrl = await page.evaluate(() => document.querySelectorAll('#card-list > div > figure > a > img')[0].src)
+            listCards[i].url_image = cardImageUrl
+            let path = process.env.SYSTEM_IMAGE_PATH
+            download(cardImageUrl, `${path}/${listCards[i].nm_card}.jpg`, function(){
+                console.log('done');
+            });
         } catch (e){
-            i--
+            console.log(e)
         }
     }
     dao.insertImageCards(listCards)
     qtdWebSites++
-    if(qtdWebSites == maxQtdPages){
-        await quit(browser)
-    }
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function getAllCards(page) {
@@ -82,9 +92,6 @@ async function getSoloPrices(browser){
         const page = await browser.newPage()
         console.log('uHUlll')    
         qtdWebSites++
-        if(qtdWebSites == maxQtdPages){
-            await quit(browser)
-        }
     } catch (e){
         console.log("alguma cosia deu errada")
     }
@@ -95,9 +102,6 @@ async function getDuelShopPrices(browser){
         const page = await browser.newPage()
         console.log('uHUlll')    
         qtdWebSites++
-        if(qtdWebSites == maxQtdPages){
-            await quit(browser)
-        }
     } catch (e){
         console.log("alguma cosia deu errada")
     }
@@ -106,9 +110,12 @@ async function getDuelShopPrices(browser){
 var fs = require('fs'), request = require('request');
 
 function download(uri, filename, callback){
-  request.head(uri, function(err, res, body){
-    request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
-  });
+    request.head(uri, function(err, res, body){
+        if(err){
+            console.log(err)
+        }
+        request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+    });
 };
 
 run()
