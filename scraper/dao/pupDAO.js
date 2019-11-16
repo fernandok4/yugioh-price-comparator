@@ -1,9 +1,9 @@
-let mysql = require('mysql')
+let pg = require('pg')
 let json = require('../../config.json')
 let database = require('./database')
 let conn = new database.Database(json)
 
-let con = mysql.createConnection(json)
+let con = pg.Pool(json)
 
 function clearCards(){
     let sql = "DELETE FROM cards"
@@ -11,7 +11,7 @@ function clearCards(){
 }
 
 function insertCards(cards){
-    let sql = "INSERT INTO cards (nm_card, nm_attribute) VALUES (?, ?)"
+    let sql = "INSERT INTO cards (nm_card, nm_attribute) VALUES ($1, $2)"
     cards.forEach(card => {
         con.query(sql, [card.name, card.attribute], (err, rows, fields) => {
             if(err){
@@ -24,7 +24,7 @@ function insertCards(cards){
 }
 
 function insertImageCards(cards){
-    let sql = "UPDATE cards SET ds_url_card = ? WHERE nm_card = ?"
+    let sql = "UPDATE cards SET ds_url_card = $1 WHERE nm_card = $2"
     cards.forEach(card => {
         con.query(sql, [card.url_image, card.name], (err, rows, fields) => {
             if(err){

@@ -1,16 +1,16 @@
-const mysql = require( 'mysql' );
+const pg = require( 'pg' );
 let json = require('../../config.json')
 
 class Database {
     constructor( config ) {
-        this.connection = mysql.createConnection(json);
+        this.connection = pg.Pool(json);
     }
     query( sql, args ) {
         return new Promise( ( resolve, reject ) => {
-            this.connection.query( sql, args, ( err, rows ) => {
+            this.connection.query( sql, args, ( err, results ) => {
                 if ( err )
                     return reject( err );
-                resolve( rows );
+                resolve( results.rows );
             } );
         } );
     }

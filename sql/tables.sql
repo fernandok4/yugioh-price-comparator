@@ -1,6 +1,6 @@
 CREATE TABLE cards (
-    id_card INTEGER AUTO_INCREMENT PRIMARY KEY,
-    nm_card VARCHAR(100),
-    nm_attribute VARCHAR(50),
-    ds_url_card VARCHAR(500)
+    id_card SERIAL PRIMARY KEY,
+    nm_card VARCHAR,
+    nm_attribute VARCHAR,
+    ds_url_card VARCHAR
 );
