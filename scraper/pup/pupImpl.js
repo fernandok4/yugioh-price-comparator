@@ -10,11 +10,12 @@ var maxQtdPages = 3
 async function run() {
     const browser = await pup.launch()
     const page = await browser.newPage()
-    // let listCards = await getAllCards(page)
-    console.log("teste")
+    console.log("lendo as cartas da página.")
+    let listCards = await getAllCards(page)
+    console.log("pegando as cartas do banco.")
     let cards = await dao.getAllCards()
+    console.log("lendo os preços e pegando a imagem das cartas.")
     getPrices(browser, cards)
-    console.log("teste2")
     setInterval(verifyEnd, 20000)
 }
 
