@@ -11,8 +11,9 @@ async function run() {
     const browser = await pup.launch()
     const page = await browser.newPage()
     await page.goto(CARDS_DATABASE)
-    let listCards = await getAllCards(page)
+    // let listCards = await getAllCards(page)
     getPrices(browser, listCards)
+    browser.close()
 }
 
 function getPrices(browser, listCards){
@@ -50,10 +51,12 @@ async function getImageCards(listCards, browser){
 
 async function getAllCards(page) {
     let listCards = []
-    dao.clearCards()
+    // dao.clearCards()
     for (let i = 1; i < 200; i++) {
+        listCards = []
         try {
             await page.goto(CARDS_DATABASE + String(i))
+            console.log(i)
             const cardNames = await page.evaluate(() => [...document.querySelectorAll('.box_card_name')].map(elem => elem.innerText))
             const cardAttributes = await page.evaluate(() => [...document.querySelectorAll('.box_card_attribute span')].map(elem => elem.innerText))
             if (cardNames == null) {
@@ -66,11 +69,11 @@ async function getAllCards(page) {
                 }
                 listCards.push(obj)
             }
+            dao.insertCards(listCards)
         } catch (e) {
             i--
         }
     }
-    dao.insertCards(listCards)
     return listCards
 }
 
