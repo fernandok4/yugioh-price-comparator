@@ -11,7 +11,9 @@ async function run() {
     const browser = await pup.launch()
     const page = await browser.newPage()
     console.log("lendo as cartas da página.")
-    let listCards = await getAllCards(page)
+    if(process.env.READ_CARDS){
+        let listCards = await getAllCards(page)
+    }
     console.log("pegando as cartas do banco.")
     let cards = await dao.getAllCards()
     console.log("lendo os preços e pegando a imagem das cartas.")
@@ -62,7 +64,7 @@ function sleep(ms) {
 
 async function getAllCards(page) {
     let listCards = []
-    // dao.clearCards()
+    dao.clearCards()
     for (let i = 1; i < 200; i++) {
         listCards = []
         try {
