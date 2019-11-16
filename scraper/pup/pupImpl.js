@@ -8,7 +8,7 @@ var qtdWebSites = 0
 var maxQtdPages = 3
 
 async function run() {
-    const browser = await pup.launch()
+    const browser = await pup.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']})
     const page = await browser.newPage()
     console.log("lendo as cartas da página.")
     if(process.env.READ_CARDS){
