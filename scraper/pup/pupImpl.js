@@ -30,7 +30,11 @@ function verifyEnd(browser){
 async function getPrices(browser, listCards){
     getSoloPrices(browser)
     getDuelShopPrices(browser)
-    getImageCards(listCards, browser)
+    if(process.env.READ_IMAGE_CARDS == '1'){
+        getImageCards(listCards, browser)
+    } else {
+        qtdWebSites++
+    }
 }
 
 async function quit(browser) {
@@ -47,7 +51,8 @@ async function getImageCards(listCards, browser){
             const cardImageUrl = await page.evaluate(() => document.querySelectorAll('#card-list > div > figure > a > img')[0].src)
             listCards[i].url_image = cardImageUrl
             let path = process.env.SYSTEM_IMAGE_PATH
-            download(cardImageUrl, `${path}/${listCards[i].nm_card}.jpg`, function(){
+            let imageName = `${listCards[i].nm_card.replace('/', '')}.jpg`
+            download(cardImageUrl, `${path}/${imageName}`, function(){
                 console.log('done');
             });
         } catch (e){
