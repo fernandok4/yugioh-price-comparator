@@ -51,7 +51,7 @@ async function getImageCards(listCards, browser){
             const cardImageUrl = await page.evaluate(() => document.querySelectorAll('#card-list > div > figure > a > img')[0].src)
             listCards[i].url_image = cardImageUrl
             let path = process.env.SYSTEM_IMAGE_PATH
-            let imageName = `${listCards[i].nm_card.replace('/', '')}.jpg`
+            let imageName = `${listCards[i].nm_card.replaceAll('/', '')}.jpg`
             download(cardImageUrl, `${path}/${imageName}`, function(){
                 console.log('done');
             });
