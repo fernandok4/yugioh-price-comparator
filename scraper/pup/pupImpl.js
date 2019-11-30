@@ -4,11 +4,13 @@ const soloPup = require('./pupSoloImpl')
 const duelPup = require('./pupDuelImpl')
 const CARDS_DATABASE = "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&rp=100&page="
 const CARDS_IMAGES = "https://db.ygoprodeck.com/search/?card="
+const SOLO_PRICES = "https://www.solosagrado.com.br/busca?pg=15&categoria=&view=&qtdview=0&pagina=1&ord=1&pesq="
+const DUEL_SHOP_PRICES = "https://www.duelshop.com.br/procurar?controller=search&orderby=position&orderway=desc&search_query="
 var qtdWebSites = 0
 var maxQtdPages = 3
 
 async function run() {
-    const browser = await pup.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']})
+    const browser = await pup.launch({args: ['--no-sandbox', '--disable-setuid-sandbox'], ignoreHTTPSErrors: true})
     const page = await browser.newPage()
     console.log("lendo as cartas da página. ", process.env.READ_CARDS)
     if(process.env.READ_CARDS == '1'){
@@ -28,8 +30,8 @@ function verifyEnd(browser){
 }
 
 async function getPrices(browser, listCards){
-    getSoloPrices(browser)
-    getDuelShopPrices(browser)
+    getSoloPrices(browser, listCards)
+    getDuelShopPrices(browser, listCards)
     if(process.env.READ_IMAGE_CARDS == '1'){
         getImageCards(listCards, browser)
     } else {
@@ -95,24 +97,38 @@ async function getAllCards(page) {
     return listCards
 }
 
-async function getSoloPrices(browser){
-    try {
-        const page = await browser.newPage()
-        console.log('uHUlll')    
-        qtdWebSites++
-    } catch (e){
-        console.log("alguma cosia deu errada")
+async function getSoloPrices(browser, listCards){
+    const page = await browser.newPage()
+    for(let i = 0; i < listCards.length; i++){
+        try {
+            let url = SOLO_PRICES + listCards[i].nm_card.replace(/ /g, "%20")
+            await page.goto(url)
+            console.log(url)
+            const price = await page.evaluate(() => document.querySelector('#ambiente_compra > div.wide_layout.relative > div.page_content_offset > div > div > section > section > div:nth-child(1) > figure > figcaption > div > p.scheme_color.f_size_large > span.bold').innerText)
+            const formated_price = price.match(/\d+,\d\d/g)[0].replace(',', '.')
+            dao.insertPriceCard(listCards[i].id_card, 1, formated_price, url)
+        } catch (e){
+            console.log("alguma coisa deu errada na leitura dos preços da solosagrado")
+        }
     }
+    qtdWebSites++
 }
 
-async function getDuelShopPrices(browser){
-    try {
-        const page = await browser.newPage()
-        console.log('uHUlll')    
-        qtdWebSites++
-    } catch (e){
-        console.log("alguma cosia deu errada")
+async function getDuelShopPrices(browser, listCards){
+    const page = await browser.newPage()
+    for(let i = 0; i < listCards.length; i++){
+        try {
+            let url = DUEL_SHOP_PRICES + listCards[i].nm_card.replace(/ /g, "%20") + "&submit_search="
+            console.log(url)
+            await page.goto(url)
+            const price = await page.evaluate(() => document.querySelector('#center_column > ul > li:nth-child(1) > div > div.right-block > div.content_price > span').innerText)
+            const formated_price = price.match(/\d+,\d\d/g)[0].replace(',', '.')
+            dao.insertPriceCard(listCards[i].id_card, 2, formated_price, url)
+        } catch (e){
+            console.log("alguma coisa deu errada na leitura dos preços da duelshop")
+        }
     }
+    qtdWebSites++
 }
 
 var fs = require('fs'), request = require('request');

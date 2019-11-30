@@ -38,17 +38,26 @@ function insertImageCards(cards){
 
 async function getAllCards(){
     let cards = []
-    await conn.query("SELECT nm_card FROM cards").then((rows) => {
+    await conn.query("SELECT id_card, nm_card FROM cards").then((rows) => {
         for(row of rows){
-            cards.push({nm_card: row.nm_card})
+            cards.push({nm_card: row.nm_card, id_card: row.id_card})
         }
     })
     return cards
+}
+
+function insertPriceCard(id_card, id_site, price, ds_url){
+    conn.query(`
+        INSERT INTO cards_price (id_card, dt_reference, id_site, vl_price, ds_url)
+        VALUES($1, TO_CHAR(NOW(), 'YYYYMMDD')::INTEGER, $2, $3, $4) 
+        ON CONFLICT DO NOTHING
+    `, [id_card, id_site, price, ds_url])
 }
 
 module.exports = {
     insertCards: insertCards,
     clearCards: clearCards,
     insertImageCards: insertImageCards,
-    getAllCards: getAllCards
+    getAllCards: getAllCards,
+    insertPriceCard: insertPriceCard
 }
