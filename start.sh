@@ -1,1 +1,1 @@
-SYSTEM_IMAGE_PATH=~/images READ_CARDS=$1 READ_IMAGE_CARDS=$2 node scraper/pup/pupImpl
+SYSTEM_IMAGE_PATH=~/images READ_CARDS=$1 READ_IMAGE_CARDS=$2 READ_PRICES=$3 node scraper/pup/pupImpl

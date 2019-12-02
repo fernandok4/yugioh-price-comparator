@@ -3,7 +3,7 @@ const dao = require('../dao/pupDAO')
 const soloPup = require('./pupSoloImpl')
 const duelPup = require('./pupDuelImpl')
 const CARDS_DATABASE = "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&rp=100&page="
-const CARDS_IMAGES = "https://db.ygoprodeck.com/search/?card="
+const CARDS_IMAGES = "https://db.ygoprodeck.com/card/?search="
 const SOLO_PRICES = "https://www.solosagrado.com.br/busca?pg=15&categoria=&view=&qtdview=0&pagina=1&ord=1&pesq="
 const DUEL_SHOP_PRICES = "https://www.duelshop.com.br/procurar?controller=search&orderby=position&orderway=desc&search_query="
 var qtdWebSites = 0
@@ -30,8 +30,12 @@ function verifyEnd(browser){
 }
 
 async function getPrices(browser, listCards){
-    getSoloPrices(browser, listCards)
-    getDuelShopPrices(browser, listCards)
+    if(process.env.READ_PRICES == '1'){
+        getSoloPrices(browser, listCards)
+        getDuelShopPrices(browser, listCards)
+    } else {
+        qtdWebSites += 2
+    }
     if(process.env.READ_IMAGE_CARDS == '1'){
         getImageCards(listCards, browser)
     } else {
@@ -48,9 +52,9 @@ async function getImageCards(listCards, browser){
     for(let i = 0; i < listCards.length; i++){
         try{
             console.log(CARDS_IMAGES + String(listCards[i].nm_card))
-            await page.goto(CARDS_IMAGES + String(listCards[i].nm_card))
+            await page.goto(CARDS_IMAGES + String(listCards[i].nm_card).replace(/ /g, "%20"))
             await sleep(5000)
-            const cardImageUrl = await page.evaluate(() => document.querySelectorAll('#card-list > div > figure > a > img')[0].src)
+            const cardImageUrl = await page.evaluate(() => document.querySelectorAll('body > div.w3-row-padding.w3-padding-64.w3-container > div.w3-content-card > div.w3-third.w3-center > div > span > a > img')[0].src)
             listCards[i].url_image = cardImageUrl
             let path = process.env.SYSTEM_IMAGE_PATH
             let imageName = `${listCards[i].id_card}.jpg`
@@ -58,7 +62,7 @@ async function getImageCards(listCards, browser){
                 console.log('done');
             });
         } catch (e){
-            console.log(e)
+            console.log("Erro na leitura das imagens " + listCards[i].id_card)
         }
     }
     dao.insertImageCards(listCards)
